@@ -18,7 +18,7 @@ class Member(models.Model):
     died = models.DateField(blank=True, null=True)
 
     description = models.TextField(null=True, blank=True)
-    occupation = models.CharField(null=True, blank=True)
-    country = models.CharField(blank=True, null=True)
+    occupation = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
 
     last_modified = models.DateTimeField(auto_now=True)
