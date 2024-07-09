@@ -22,3 +22,30 @@ class Member(models.Model):
     country = models.CharField(max_length=100, blank=True, null=True)
 
     last_modified = models.DateTimeField(auto_now=True)
+
+
+class Relation(models.Model):
+    class RelationChoice(models.IntegerChoices):
+        PARTNER = 1, "Partner"
+        MOTHER = 2, "Mother"
+        FATHER = 3, "Father"
+        STEPMOTHER = 4, "Stepmother"
+        STEPFATHER = 5, "Stepfather"
+        WIFE = 6, "Wife"
+        HUSBAND = 7, "Husband"
+        BROTHER = 8, "Brother"
+        SISTER = 9, "Sister"
+        HALF_BROTHER = 10, "Half-bother"
+        HALF_SISTER = 11, "Half-sister"
+        ADOPTED_SON = 12, "Adopted son"
+        ADOPTED_DAUGHTER = 13, "Adopted daughter"
+
+    from_person = models.ForeignKey(
+        Member, on_delete=models.CASCADE, related_name="relations_from"
+    )
+    to_person = models.ForeignKey(
+        Member, on_delete=models.CASCADE, related_name="relations_to"
+    )
+    relation_type = models.SmallIntegerField(choices=RelationChoice.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
