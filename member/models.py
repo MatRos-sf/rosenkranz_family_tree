@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse_lazy
 
 
 class GenderChoice(models.IntegerChoices):
@@ -22,6 +23,27 @@ class Member(models.Model):
     country = models.CharField(max_length=100, blank=True, null=True)
 
     last_modified = models.DateTimeField(auto_now=True)
+
+    def get_success_url(self):
+        return reverse_lazy("member-detail", kwargs={"pk": self.pk})
+
+    def has_father(self):
+        return self.relations_from.filter(
+            relation_type=Relation.RelationChoice.FATHER
+        ).exists()
+
+    def has_mother(self):
+        return self.relations_from.filter(
+            relation_type=Relation.RelationChoice.MOTHER
+        ).exists()
+
+    def has_siblings(self):
+        return self.relations_from.filter(
+            relation_type__in=[
+                Relation.RelationChoice.BROTHER,
+                Relation.RelationChoice.SISTER,
+            ]
+        ).exists()
 
 
 class Relation(models.Model):
