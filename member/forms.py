@@ -2,7 +2,7 @@ from django import forms
 from django.forms.widgets import DateInput
 from django.utils import timezone
 
-from .models import Member
+from .models import Member, Relation
 
 
 class MemberForm(forms.ModelForm):
@@ -35,3 +35,19 @@ class MemberForm(forms.ModelForm):
         if died and died > timezone.now().date():
             raise forms.ValidationError("Death date cannot be in the future.")
         return died
+
+
+class RelationForm(forms.ModelForm):
+    class Meta:
+        model = Relation
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        from_person = cleaned_data.get("from_person")
+        to_person = cleaned_data.get("to_person")
+
+        if from_person == to_person:
+            raise forms.ValidationError("From and to persons cannot be the same.")
+
+        return cleaned_data
