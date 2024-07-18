@@ -6,5 +6,29 @@
         <meta name="keywords" content="foo,bar" />
         <title>Detail</title>
     </head>
-    <body>{{ object.has_father }}</body>
+    <body>
+        <h4>{{ object.first_name }}</h4>
+        <h4>{{ object.middle_name }}</h4>
+        <h4>{{ object.third_name }}</h4>
+        <h4>{{ object.surname }}</h4>
+        <h4>{{ object.get_gender_display }}</h4>
+        <h4>{{ object.born }}</h4>
+        <h4>{{ object.died }}</h4>
+        <button type="button">
+            {% if object.has_mother %}
+                Add Mother
+            {% else %}
+                Edit Mother
+            {% endif %}
+        </button>
+        <button type="button">
+            {% if object.has_father %}
+                Add Father
+            {% else %}
+                Edit Father
+            {% endif %}
+        </button>
+        <button type="button">Add Partner</button>
+        <button type="button">Add Siblings</button>
+    </body>
 </html>
