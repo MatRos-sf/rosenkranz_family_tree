@@ -27,6 +27,9 @@ class Member(models.Model):
     def get_success_url(self):
         return reverse_lazy("member-detail", kwargs={"pk": self.pk})
 
+    def __str__(self):
+        return f"{self.first_name} {self.middle_name} {self.third_name} {self.surname}"
+
     def has_father(self):
         return self.relations_from.filter(
             relation_type=Relation.RelationChoice.FATHER
@@ -46,22 +49,27 @@ class Member(models.Model):
         ).exists()
 
 
-class Relation(models.Model):
-    class RelationChoice(models.IntegerChoices):
-        PARTNER = 1, "Partner"
-        MOTHER = 2, "Mother"
-        FATHER = 3, "Father"
-        STEPMOTHER = 4, "Stepmother"
-        STEPFATHER = 5, "Stepfather"
-        WIFE = 6, "Wife"
-        HUSBAND = 7, "Husband"
-        BROTHER = 8, "Brother"
-        SISTER = 9, "Sister"
-        HALF_BROTHER = 10, "Half-bother"
-        HALF_SISTER = 11, "Half-sister"
-        ADOPTED_SON = 12, "Adopted son"
-        ADOPTED_DAUGHTER = 13, "Adopted daughter"
+class RelationChoice(models.IntegerChoices):
+    PARTNER = 1, "Partner"
+    MOTHER = 2, "Mother"
+    FATHER = 3, "Father"
+    DAUGHTER = 4, "Daughter"
+    SON = 5, "Son"
+    CHILD = 6, "Child"
+    STEPMOTHER = 7, "Stepmother"
+    STEPFATHER = 8, "Stepfather"
+    WIFE = 9, "Wife"
+    HUSBAND = 10, "Husband"
+    BROTHER = 11, "Brother"
+    SISTER = 12, "Sister"
+    SIBLING = 13, "Sibling"
+    HALF_BROTHER = 14, "Half-bother"
+    HALF_SISTER = 15, "Half-sister"
+    ADOPTED_SON = 16, "Adopted son"
+    ADOPTED_DAUGHTER = 17, "Adopted daughter"
 
+
+class Relation(models.Model):
     from_person = models.ForeignKey(
         Member, on_delete=models.CASCADE, related_name="relations_from"
     )
