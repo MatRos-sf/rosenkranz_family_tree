@@ -5,7 +5,6 @@ from django.urls import reverse_lazy
 class GenderChoice(models.IntegerChoices):
     FEMALE = 1, "Female"
     MALE = 2, "Male"
-    OTHER = 3, "Other"
 
 
 class Member(models.Model):
@@ -50,23 +49,87 @@ class Member(models.Model):
 
 
 class RelationChoice(models.IntegerChoices):
+    """
+    This class represents different types of relationships between members.
+    """
+
     PARTNER = 1, "Partner"
     MOTHER = 2, "Mother"
     FATHER = 3, "Father"
     DAUGHTER = 4, "Daughter"
     SON = 5, "Son"
-    CHILD = 6, "Child"
+    # CHILD = 6, "Child"
     STEPMOTHER = 7, "Stepmother"
     STEPFATHER = 8, "Stepfather"
     WIFE = 9, "Wife"
     HUSBAND = 10, "Husband"
     BROTHER = 11, "Brother"
     SISTER = 12, "Sister"
-    SIBLING = 13, "Sibling"
+    # SIBLING = 13, "Sibling"
     HALF_BROTHER = 14, "Half-bother"
     HALF_SISTER = 15, "Half-sister"
     ADOPTED_SON = 16, "Adopted son"
-    ADOPTED_DAUGHTER = 17, "Adopted daughter"
+    ADOPTED_DAUGHTER = (
+        17,
+        "Adopted daughter",
+    )
+    PARENT = 18, "Parent"
+
+    @classmethod
+    def create_reverse_relation(cls, from_person: Member, to_person: Member) -> Member:
+        """
+        This method returns the reverse relation type for a given relation.
+        """
+        reverse_relation_mapping = {
+            cls.PARTNER: cls.PARTNER,
+            cls.MOTHER: cls.mother_and_father_relation_reverse(from_person, to_person),
+            cls.FATHER: cls.mother_and_father_relation_reverse(from_person, to_person),
+            cls.DAUGHTER: cls.FATHER
+            if from_person.gender == GenderChoice.MALE
+            else cls.MOTHER,
+            cls.SON: cls.FATHER
+            if from_person.gender == GenderChoice.MALE
+            else cls.MOTHER,
+            cls.STEPMOTHER: cls.mother_and_father_relation_reverse(
+                from_person, to_person
+            ),
+            cls.STEPFATHER: cls.mother_and_father_relation_reverse(
+                from_person, to_person
+            ),
+            cls.WIFE: cls.HUSBAND,
+            cls.HUSBAND: cls.WIFE,
+            cls.BROTHER: cls.get_reverse_sibling_relation(from_person),
+            cls.SISTER: cls.get_reverse_sibling_relation(from_person),
+            cls.HALF_BROTHER: cls.HALF_BROTHER
+            if from_person.gender == GenderChoice.MALE
+            else cls.HALF_SISTER,
+            cls.HALF_SISTER: cls.HALF_BROTHER
+            if from_person.gender == GenderChoice.MALE
+            else cls.HALF_SISTER,
+            cls.ADOPTED_SON: cls.PARENT,
+            cls.ADOPTED_DAUGHTER: cls.PARENT,
+            cls.PARENT: cls.ADOPTED_SON
+            if from_person.gender == GenderChoice.MALE
+            else cls.ADOPTED_DAUGHTER,
+        }
+        return reverse_relation_mapping.get(from_person.relation_type)
+
+    @classmethod
+    def mother_and_father_relation_reverse(cls, from_person, to_person: Member):
+        """
+        This method returns the reverse relation type for mother and father.
+        """
+        if to_person.gender == GenderChoice.FEMALE:
+            return cls.DAUGHTER if from_person == cls.MOTHER else cls.STEPMOTHER
+        elif to_person.gender == GenderChoice.MALE:
+            return cls.SON if from_person == cls.FATHER else cls.STEPFATHER
+
+    @classmethod
+    def get_reverse_sibling_relation(cls, from_person: "Member") -> "RelationChoice":
+        """
+        This method returns the reverse relation type for brother and sister.
+        """
+        return cls.BROTHER if from_person.gender == GenderChoice.MALE else cls.SISTER
 
 
 class Relation(models.Model):
