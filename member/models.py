@@ -126,17 +126,12 @@ class RelationChoice(models.IntegerChoices):
         """
         This method returns the reverse relation type for brother and sister.
         """
-        if (
-            from_person.relation_type == cls.BROTHER
-            or from_person.relation_type == cls.SISTER
-        ):
+        if from_person.relation_type == [cls.BROTHER, cls.SISTER]:
             return (
                 cls.BROTHER if from_person.gender == GenderChoice.MALE else cls.SISTER
             )
-        elif (
-            from_person.relation_type == cls.HALF_BROTHER
-            or from_person.relation_type == cls.HALF_SISTER
-        ):
+
+        elif from_person.relation_type == [cls.HALF_BROTHER, cls.HALF_SISTER]:
             return (
                 cls.HALF_BROTHER
                 if from_person.gender == GenderChoice.MALE
