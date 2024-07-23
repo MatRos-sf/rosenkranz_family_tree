@@ -58,23 +58,23 @@ class RelationChoice(models.IntegerChoices):
     FATHER = 3, "Father"
     DAUGHTER = 4, "Daughter"
     SON = 5, "Son"
-    WIFE = 9, "Wife"
-    HUSBAND = 10, "Husband"
-    BROTHER = 11, "Brother"
-    SISTER = 12, "Sister"
-    STEPMOTHER = 7, "Stepmother"
-    STEPFATHER = 8, "Stepfather"
-    STEPSON = 9, "Stepson"
-    STEPDAUGHTER = 10, "Stepdaughter"
+    WIFE = 6, "Wife"
+    HUSBAND = 7, "Husband"
+    BROTHER = 8, "Brother"
+    SISTER = 9, "Sister"
+    STEPMOTHER = 10, "Stepmother"
+    STEPFATHER = 11, "Stepfather"
+    STEPSON = 12, "Stepson"
+    STEPDAUGHTER = 13, "Stepdaughter"
     HALF_BROTHER = 14, "Half-bother"
     HALF_SISTER = 15, "Half-sister"
-    SIBLING = 13, "Sibling"
-    ADOPTED_SON = 16, "Adopted son"
+    SIBLING = 16, "Sibling"
+    ADOPTED_SON = 17, "Adopted son"
     ADOPTED_DAUGHTER = (
-        17,
+        18,
         "Adopted daughter",
     )
-    PARENT = 18, "Parent"
+    PARENT = 19, "Parent"
     # CHILD = 6, "Child"
 
     @classmethod
