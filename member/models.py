@@ -32,20 +32,16 @@ class Member(models.Model):
         return f"{self.first_name} {self.middle_name} {self.third_name} {self.surname}"
 
     def has_father(self):
-        return self.relations_from.filter(
-            relation_type=Relation.RelationChoice.FATHER
-        ).exists()
+        return self.relations_from.filter(relation_type=RelationChoice.FATHER).exists()
 
     def has_mother(self):
-        return self.relations_from.filter(
-            relation_type=Relation.RelationChoice.MOTHER
-        ).exists()
+        return self.relations_from.filter(relation_type=RelationChoice.MOTHER).exists()
 
     def has_siblings(self):
         return self.relations_from.filter(
             relation_type__in=[
-                Relation.RelationChoice.BROTHER,
-                Relation.RelationChoice.SISTER,
+                RelationChoice.BROTHER,
+                RelationChoice.SISTER,
             ]
         ).exists()
 
@@ -80,7 +76,7 @@ class RelationChoice(models.IntegerChoices):
     # CHILD = 6, "Child"
 
     @classmethod
-    def create_reverse_relation(cls, from_person: Member) -> "RelationChoice":
+    def get_reverse_relation(cls, from_person: Member) -> "RelationChoice":
         """
         This method returns the reverse relation type for a given relation.
         """
@@ -113,18 +109,22 @@ class RelationChoice(models.IntegerChoices):
             Reverse relation type: SON or DAUGHTER
         """
         if from_person.relation_type in [cls.MOTHER, cls.FATHER]:
-            return cls.SON if from_person.gender == GenderChoice.MALE else cls.DAUGHTER
+            return (
+                cls.SON
+                if from_person.from_person.gender == GenderChoice.MALE
+                else cls.DAUGHTER
+            )
         elif from_person.relation_type in [cls.STEPMOTHER, cls.STEPFATHER]:
             return (
                 cls.STEPSON
-                if from_person.gender == GenderChoice.MALE
+                if from_person.from_person.gender == GenderChoice.MALE
                 else cls.STEPDAUGHTER
             )
         elif from_person.relation_type == cls.PARENT:
             # when child is adopted
             return (
                 cls.ADOPTED_SON
-                if from_person.gender == GenderChoice.MALE
+                if from_person.from_person.gender == GenderChoice.MALE
                 else cls.ADOPTED_DAUGHTER
             )
         else:
@@ -139,13 +139,15 @@ class RelationChoice(models.IntegerChoices):
         """
         if from_person.relation_type in [cls.BROTHER, cls.SISTER]:
             return (
-                cls.BROTHER if from_person.gender == GenderChoice.MALE else cls.SISTER
+                cls.BROTHER
+                if from_person.from_person.gender == GenderChoice.MALE
+                else cls.SISTER
             )
 
         elif from_person.relation_type in [cls.HALF_BROTHER, cls.HALF_SISTER]:
             return (
                 cls.HALF_BROTHER
-                if from_person.gender == GenderChoice.MALE
+                if from_person.from_person.gender == GenderChoice.MALE
                 else cls.HALF_SISTER
             )
         elif from_person.relation_type == cls.SIBLING:
@@ -155,14 +157,18 @@ class RelationChoice(models.IntegerChoices):
             return
 
     @classmethod
-    def get_parent_relation(cls, from_person: Member) -> Optional["RelationChoice"]:
+    def get_parent_relation(cls, from_person: "Relation") -> Optional["RelationChoice"]:
         """
         Example:
             Tom (from_person) is son of X. So X is father or mother of Tom.
             Reverse relation type: FATHER or MOTHER
         """
         if from_person.relation_type in [cls.DAUGHTER, cls.SON]:
-            return cls.FATHER if from_person.gender == GenderChoice.MALE else cls.MOTHER
+            return (
+                cls.FATHER
+                if from_person.from_person.gender == GenderChoice.MALE
+                else cls.MOTHER
+            )
         elif from_person.relation_type in [cls.STEPSON, cls.STEPDAUGHTER]:
             return (
                 cls.STEPFATHER
@@ -183,3 +189,9 @@ class Relation(models.Model):
     relation_type = models.SmallIntegerField(choices=RelationChoice.choices)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_success_url(self):
+        return reverse_lazy("member-detail", kwargs={"pk": self.from_person.pk})
+
+    def __str__(self):
+        return f"{self.from_person} is related to {self.to_person} as {self.get_relation_type_display()}"

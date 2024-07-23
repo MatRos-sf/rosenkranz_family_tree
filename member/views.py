@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
 
 from .forms import MemberForm, RelationForm
-from .models import Member, Relation
+from .models import Member, Relation, RelationChoice
 
 
 class MemberCreateView(CreateView):
@@ -21,16 +21,6 @@ class MemberDetailView(DetailView):
     template_name = "member/detail.html"
 
 
-# def get_reverse_relation_type(from_person: Member, to_person: Member, relation_type: int) -> int:
-#     reverse_relation_mapping = {
-#         Relation.RelationChoice.PARTNER: Relation.RelationChoice.PARTNER,
-#         Relation.RelationChoice.MOTHER: Relation.if to_person.gender == GenderChoice.FEMALE else Relation.RelationChoice.MOTHER,
-#         Relation.RelationChoice.FATHER: Relation.RelationChoice.MOTHER,
-#         Relation.RelationChoice.STEPMOTHER: Relation.RelationChoice.STEPFATHER,
-#         Relation.RelationChoice.STEPFATHER: Relation.RelationChoice.STEPMOTHER,
-#         Relation.RelationChoice.WIFE: Relation.RelationChoice.HUSBAND,
-
-
 class RelationCreateView(CreateView):
     """
     A Django CreateView for creating a new Relation.
@@ -41,8 +31,13 @@ class RelationCreateView(CreateView):
     template_name = "member/create.html"
     success_url = reverse_lazy("member-detail")
 
-    # def form_valid(self, form):
-    #     response = super().form_valid(form)
-    #     from_person = form.instance.from_person
-    #     to_person = form.instance.to_person
-    #     relation_type = form.cleaned_data["relation_type"]
+    def form_valid(self, form):
+        instance = form.save()
+        # reverse_relation
+        Relation.objects.create(
+            from_person=instance.to_person,
+            to_person=instance.from_person,
+            relation_type=RelationChoice.get_reverse_relation(instance),
+            created_at=instance.created_at,
+        )
+        return super().form_valid(form)
