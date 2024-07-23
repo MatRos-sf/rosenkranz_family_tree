@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db import models
 from django.urls import reverse_lazy
 
@@ -78,7 +80,7 @@ class RelationChoice(models.IntegerChoices):
     # CHILD = 6, "Child"
 
     @classmethod
-    def create_reverse_relation(cls, from_person: Member, to_person: Member) -> Member:
+    def create_reverse_relation(cls, from_person: Member) -> "RelationChoice":
         """
         This method returns the reverse relation type for a given relation.
         """
@@ -104,7 +106,7 @@ class RelationChoice(models.IntegerChoices):
         return reverse_relation_mapping.get(from_person.relation_type)
 
     @classmethod
-    def get_child_relation(cls, from_person):
+    def get_child_relation(cls, from_person) -> Optional["RelationChoice"]:
         """
         Example:
             Tom (from_person) is father (relation_type) of X. So X is son or daughter of Tom.
@@ -129,7 +131,7 @@ class RelationChoice(models.IntegerChoices):
             return
 
     @classmethod
-    def get_sibling_relation(cls, from_person: Member):
+    def get_sibling_relation(cls, from_person: Member) -> Optional["RelationChoice"]:
         """
         Example:
             Tom (from_person) is brother (relation_type) of X. So X is brother or sister of Tom.
@@ -153,7 +155,7 @@ class RelationChoice(models.IntegerChoices):
             return
 
     @classmethod
-    def get_parent_relation(cls, from_person: Member):
+    def get_parent_relation(cls, from_person: Member) -> Optional["RelationChoice"]:
         """
         Example:
             Tom (from_person) is son of X. So X is father or mother of Tom.
