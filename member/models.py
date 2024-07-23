@@ -65,7 +65,7 @@ class RelationChoice(models.IntegerChoices):
     HUSBAND = 10, "Husband"
     BROTHER = 11, "Brother"
     SISTER = 12, "Sister"
-    # SIBLING = 13, "Sibling"
+    SIBLING = 13, "Sibling"
     HALF_BROTHER = 14, "Half-bother"
     HALF_SISTER = 15, "Half-sister"
     ADOPTED_SON = 16, "Adopted son"
@@ -100,12 +100,9 @@ class RelationChoice(models.IntegerChoices):
             cls.HUSBAND: cls.WIFE,
             cls.BROTHER: cls.get_reverse_sibling_relation(from_person),
             cls.SISTER: cls.get_reverse_sibling_relation(from_person),
-            cls.HALF_BROTHER: cls.HALF_BROTHER
-            if from_person.gender == GenderChoice.MALE
-            else cls.HALF_SISTER,
-            cls.HALF_SISTER: cls.HALF_BROTHER
-            if from_person.gender == GenderChoice.MALE
-            else cls.HALF_SISTER,
+            cls.HALF_BROTHER: cls.get_reverse_sibling_relation(from_person),
+            cls.HALF_SISTER: cls.get_reverse_sibling_relation(from_person),
+            cls.SIBLING: cls.get_reverse_sibling_relation(from_person),
             cls.ADOPTED_SON: cls.PARENT,
             cls.ADOPTED_DAUGHTER: cls.PARENT,
             cls.PARENT: cls.ADOPTED_SON
@@ -125,11 +122,30 @@ class RelationChoice(models.IntegerChoices):
             return cls.SON if from_person == cls.FATHER else cls.STEPFATHER
 
     @classmethod
-    def get_reverse_sibling_relation(cls, from_person: "Member") -> "RelationChoice":
+    def get_reverse_sibling_relation(cls, from_person: Member) -> "RelationChoice":
         """
         This method returns the reverse relation type for brother and sister.
         """
-        return cls.BROTHER if from_person.gender == GenderChoice.MALE else cls.SISTER
+        if (
+            from_person.relation_type == cls.BROTHER
+            or from_person.relation_type == cls.SISTER
+        ):
+            return (
+                cls.BROTHER if from_person.gender == GenderChoice.MALE else cls.SISTER
+            )
+        elif (
+            from_person.relation_type == cls.HALF_BROTHER
+            or from_person.relation_type == cls.HALF_SISTER
+        ):
+            return (
+                cls.HALF_BROTHER
+                if from_person.gender == GenderChoice.MALE
+                else cls.HALF_SISTER
+            )
+        elif from_person.relation_type == cls.SIBLING:
+            return cls.SIBLING
+        else:
+            raise ValueError("Invalid relation type")
 
 
 class Relation(models.Model):
