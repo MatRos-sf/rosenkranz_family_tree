@@ -79,103 +79,93 @@ class RelationChoice(models.IntegerChoices):
     # CHILD = 6, "Child"
 
     @classmethod
-    def get_reverse_relation(cls, from_person: Member) -> "RelationChoice":
+    def get_reverse_relation(cls, relation) -> "RelationChoice":
         """
         This method returns the reverse relation type for a given relation.
         """
+        to_person = relation.to_person
+        relation = relation.relation_type
         reverse_relation_mapping = {
             cls.PARTNER: cls.PARTNER,
-            cls.MOTHER: cls.get_child_relation(from_person),
-            cls.FATHER: cls.get_child_relation(from_person),
-            cls.DAUGHTER: cls.get_parent_relation(from_person),
-            cls.SON: cls.get_parent_relation(from_person),
-            cls.STEPMOTHER: cls.get_child_relation(from_person),
-            cls.STEPFATHER: cls.get_child_relation(from_person),
+            cls.MOTHER: cls.get_child_relation(to_person, relation),
+            cls.FATHER: cls.get_child_relation(to_person, relation),
+            cls.DAUGHTER: cls.get_parent_relation(to_person, relation),
+            cls.SON: cls.get_parent_relation(to_person, relation),
+            cls.STEPMOTHER: cls.get_child_relation(to_person, relation),
+            cls.STEPFATHER: cls.get_child_relation(to_person, relation),
             cls.WIFE: cls.HUSBAND,
             cls.HUSBAND: cls.WIFE,
-            cls.BROTHER: cls.get_sibling_relation(from_person),
-            cls.SISTER: cls.get_sibling_relation(from_person),
-            cls.HALF_BROTHER: cls.get_sibling_relation(from_person),
-            cls.HALF_SISTER: cls.get_sibling_relation(from_person),
-            cls.SIBLING: cls.get_sibling_relation(from_person),
+            cls.BROTHER: cls.get_sibling_relation(to_person, relation),
+            cls.SISTER: cls.get_sibling_relation(to_person, relation),
+            cls.HALF_BROTHER: cls.get_sibling_relation(to_person, relation),
+            cls.HALF_SISTER: cls.get_sibling_relation(to_person, relation),
+            cls.SIBLING: cls.get_sibling_relation(to_person, relation),
             cls.ADOPTED_SON: cls.PARENT,
             cls.ADOPTED_DAUGHTER: cls.PARENT,
-            cls.PARENT: cls.get_child_relation(from_person),
+            cls.PARENT: cls.get_child_relation(to_person, relation),
         }
-        return reverse_relation_mapping.get(from_person.relation_type)
+        return reverse_relation_mapping.get(relation)
 
     @classmethod
-    def get_child_relation(cls, from_person) -> Optional["RelationChoice"]:
+    def get_child_relation(cls, to_person, relation) -> Optional["RelationChoice"]:
         """
         Example:
             Tom (from_person) is father (relation_type) of X. So X is son or daughter of Tom.
             Reverse relation type: SON or DAUGHTER
         """
-        if from_person.relation_type in [cls.MOTHER, cls.FATHER]:
-            return (
-                cls.SON
-                if from_person.from_person.gender == GenderChoice.MALE
-                else cls.DAUGHTER
-            )
-        elif from_person.relation_type in [cls.STEPMOTHER, cls.STEPFATHER]:
+        if relation in [cls.MOTHER, cls.FATHER]:
+            return cls.SON if to_person.gender == GenderChoice.MALE else cls.DAUGHTER
+        elif relation in [cls.STEPMOTHER, cls.STEPFATHER]:
             return (
                 cls.STEPSON
-                if from_person.from_person.gender == GenderChoice.MALE
+                if to_person.gender == GenderChoice.MALE
                 else cls.STEPDAUGHTER
             )
-        elif from_person.relation_type == cls.PARENT:
+        elif relation == cls.PARENT:
             # when child is adopted
             return (
                 cls.ADOPTED_SON
-                if from_person.from_person.gender == GenderChoice.MALE
+                if to_person.gender == GenderChoice.MALE
                 else cls.ADOPTED_DAUGHTER
             )
         else:
             return
 
     @classmethod
-    def get_sibling_relation(cls, from_person: Member) -> Optional["RelationChoice"]:
+    def get_sibling_relation(cls, to_person, relation) -> Optional["RelationChoice"]:
         """
         Example:
             Tom (from_person) is brother (relation_type) of X. So X is brother or sister of Tom.
             Reverse relation type: BROTHER or SISTER
         """
-        if from_person.relation_type in [cls.BROTHER, cls.SISTER]:
-            return (
-                cls.BROTHER
-                if from_person.from_person.gender == GenderChoice.MALE
-                else cls.SISTER
-            )
+        if relation in [cls.BROTHER, cls.SISTER]:
+            return cls.BROTHER if to_person.gender == GenderChoice.MALE else cls.SISTER
 
-        elif from_person.relation_type in [cls.HALF_BROTHER, cls.HALF_SISTER]:
+        elif relation in [cls.HALF_BROTHER, cls.HALF_SISTER]:
             return (
                 cls.HALF_BROTHER
-                if from_person.from_person.gender == GenderChoice.MALE
+                if to_person.gender == GenderChoice.MALE
                 else cls.HALF_SISTER
             )
-        elif from_person.relation_type == cls.SIBLING:
+        elif relation == cls.SIBLING:
             # when sibling is adopted
             return cls.SIBLING
         else:
             return
 
     @classmethod
-    def get_parent_relation(cls, from_person: "Relation") -> Optional["RelationChoice"]:
+    def get_parent_relation(cls, to_person, relation) -> Optional["RelationChoice"]:
         """
         Example:
             Tom (from_person) is son of X. So X is father or mother of Tom.
             Reverse relation type: FATHER or MOTHER
         """
-        if from_person.relation_type in [cls.DAUGHTER, cls.SON]:
-            return (
-                cls.FATHER
-                if from_person.from_person.gender == GenderChoice.MALE
-                else cls.MOTHER
-            )
-        elif from_person.relation_type in [cls.STEPSON, cls.STEPDAUGHTER]:
+        if relation in [cls.DAUGHTER, cls.SON]:
+            return cls.FATHER if to_person.gender == GenderChoice.MALE else cls.MOTHER
+        elif relation in [cls.STEPSON, cls.STEPDAUGHTER]:
             return (
                 cls.STEPFATHER
-                if from_person.gender == GenderChoice.MALE
+                if to_person.gender == GenderChoice.MALE
                 else cls.STEPMOTHER
             )
         else:
