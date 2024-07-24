@@ -29,10 +29,13 @@ class Member(models.Model):
         return reverse_lazy("member-detail", kwargs={"pk": self.pk})
 
     def __str__(self):
-        return f"{self.first_name} {self.middle_name} {self.third_name} {self.surname}"
+        middle_name = f"{self.middle_name} " if self.middle_name else ""
+        third_name = f"{self.third_name} " if self.third_name else ""
+        surname = f"{self.surname}" if self.surname else ""
+        return f"{self.first_name} {middle_name} {third_name} {surname}"
 
     def has_father(self):
-        return self.relations_from.filter(relation_type=RelationChoice.FATHER).exists()
+        return self.relations_from.filter(relation_type=RelationChoice.SON).exists()
 
     def has_mother(self):
         return self.relations_from.filter(relation_type=RelationChoice.MOTHER).exists()
