@@ -50,4 +50,10 @@ class RelationForm(forms.ModelForm):
         if from_person == to_person:
             raise forms.ValidationError("From and to persons cannot be the same.")
 
+        # check if it is already relation between them
+        if from_person.relations_from.filter(to_person=to_person).count() > 0:
+            raise forms.ValidationError(
+                "The person cannot have more than one relationship with the same person."
+            )
+
         return cleaned_data
